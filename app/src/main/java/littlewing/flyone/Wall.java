@@ -14,14 +14,9 @@ import java.util.Observer;
 /**
  * Created by dungnv on 11/6/14.
  */
-public class Wall implements Observer{
+public class Wall implements Observer {
     private int width;
     private int height;
-    private int box_x;
-    private int box_y;
-
-    private int rotation; // goc quay cua box
-    private boolean isJumping; // box jumping or not
 
     private Point box_pos;
 
@@ -31,10 +26,10 @@ public class Wall implements Observer{
         this.box_pos = new Point(x, y);
 
         Resources mRes = context.getResources();
-        box_img[0] = BitmapFactory.decodeResource(mRes, R.drawable.orange);
+        this.box_img[0] = BitmapFactory.decodeResource(mRes, R.drawable.orange);
 
         for(int i=0; i <= 0; i++) {
-            box_img[i] = Bitmap.createScaledBitmap(box_img[i], getBoxSize(board.y), getBoxSize(board.y), true);       // scale box image size
+            this.box_img[i] = Bitmap.createScaledBitmap(this.box_img[i], getBoxSize(board.y), getBoxSize(board.y), true);       // scale box image size
         }
 
     }
@@ -79,6 +74,11 @@ public class Wall implements Observer{
 
     public Bitmap[] getBoxImage() { // getter for box sprite bitmap[]
         return this.box_img;
+    }
+
+    // Box can be height by 1/4 or 5/4 original height
+    public void scaleWall(int ratio) {
+        this.box_img[0] = Bitmap.createScaledBitmap(this.box_img[0], getBoxSize(getBoxX()), getBoxY()*ratio/4, true);       // scale box image size
     }
 
 }

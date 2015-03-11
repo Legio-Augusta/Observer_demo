@@ -44,9 +44,7 @@ public class BoxJumpGame {
     public static final double GRAVITY = 9.81;
     public static double time = 0;
     private double cosAlpha = 0.71; // sqrt(2)/2
-    private double sinAlpha = 0.71;
 
-    private boolean isJumping = false;
     private int yVel = 0;
     private int characterGround = 480; // TODO
 

@@ -764,17 +764,8 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
                 // Simulate jumping gravity
                 if (inRange(x, 220, 120) && inRange(y, 860, 260)) { // tap on left side TODO hardcode
                     boxjump.MOVE_DIR = boxjump.DIR_LEFT; // move to left, set DIR
-                    heroMove(12, boxjump.LEFT);
                 } else if (inRange(x, 0, 120) && inRange(y, 860, 260)) { // tap on right side 170-50 for center
                     boxjump.MOVE_DIR = boxjump.DIR_RIGHT; // move to right, set DIR
-                    heroMove(12, boxjump.RIGHT);
-                }
-                // Move up n down
-                if(inRange(x, 120, 100) && inRange(y, 840, 100)) {
-                    heroMove(12, boxjump.UP);
-                }
-                if(inRange(x, 120, 100) && inRange(y, 1020, 100)) {
-                    heroMove(12, boxjump.DOWN);
                 }
                 break;
             case MotionEvent.ACTION_DOWN:
@@ -794,7 +785,6 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
     public void tapMove(int tapX, int tapY, int topX, int topY, int width, int height, int direction) {
         // TODO cho topx,y width height thanh class Rectangle va Point
         if(inRange(tapX, topX, width) && inRange(tapY, topY, height)) {
-            heroMove(12, direction);
         }
     }
 
@@ -804,59 +794,6 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
             return true;
         }
         return false;
-    }
-
-    public void heroMove(int delta, int direction) {
-        switch(direction) {
-            // TODO set boundary by screen W-H ratio
-            case 0:                // move left
-                if(inRange(boxjump.mJetBoyX, 150, 410)) {
-                    boxjump.mJetBoyX += delta;
-                } else {
-                    boxjump.mJetBoyX=300;
-                }
-//                heroMotion();
-                break;
-            case 1:               // move right
-                if(inRange(boxjump.mJetBoyX, 150, 410)) {
-                    boxjump.mJetBoyX -= delta;
-                } else {
-                    boxjump.mJetBoyX = 300;
-                }
-//                heroMotion();
-                break;
-            case 2:               // move up
-                if(inRange(boxjump.mJetBoyX, 360, 235)) {
-                    boxjump.mJetBoyX -= delta;
-                } else {
-                    boxjump.mJetBoyX  = 470;
-                }
-//                heroMotion();
-                break;
-            case 3:               // move down
-                if(inRange(boxjump.mJetBoyY, 360, 235)) {
-                    boxjump.mJetBoyY += delta;
-                } else {
-                    boxjump.mJetBoyY = 480;
-                }
-//                heroMotion();
-                break;
-
-        }
-    }
-
-    // Use sprite image to animate hero move
-    public void heroMotion() {
-        if (boxjump.getShipIndex() < 2) {
-            boxjump.setShipIndex(boxjump.getShipIndex()+1);
-            if (boxjump.getShipIndex() == 2) boxjump.setShipIndex(0);
-            else if (boxjump.getShipIndex() == 0) boxjump.setShipIndex(1);
-        } else {
-            boxjump.setShipIndex(1);
-            boxjump.setShipIndex(boxjump.getShipIndex()+1);
-            if (boxjump.getShipIndex() == 2) boxjump.setShipIndex(0);
-            else if (boxjump.getShipIndex() == 0) boxjump.setShipIndex(1);
-        }
     }
 
     /* Callback invoked when the surface dimensions change. */
