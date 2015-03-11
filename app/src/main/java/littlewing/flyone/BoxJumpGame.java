@@ -301,9 +301,10 @@ public class BoxJumpGame {
             matrix.postTranslate(px, py);
             canvas.drawBitmap(myBox.getCurrentSprite(), matrix, null);
 
-            myBox.boxMoveX(4);   // Hieu chinh toc do box chay ngang
+            myBox.boxMoveX(3);   // Hieu chinh toc do box chay ngang
             // Neu set o box_step thi lam cho box chay qua nhanh
             //TODO tim nguyen nhan lieu co phai do dong bo sync time khong.
+            // yVel to boxUpward()
 
             yVel += myBox.getGravity();
 
@@ -380,27 +381,39 @@ public class BoxJumpGame {
 
     public ArrayList<Wall> getLevel() {
         ArrayList<Wall> level1 = new ArrayList<Wall>();
-        level1.add(null);
-        level1.add(null);
-        level1.add(new Wall(mJetBoyX+3*getBoxSize(), mJetBoyY, board, 4, context));
-        level1.add(null);
-        level1.add(null);
-        level1.add(null);
-        level1.add(new Wall(mJetBoyX+7*getBoxSize(), mJetBoyY, board, 6, context));
-        level1.add(new Wall(mJetBoyX+8*getBoxSize(), mJetBoyY, board, 2, context));
-        level1.add(null);
-        level1.add(null);
-        level1.add(null);
+        level1.add(new Wall(mJetBoyX-2*getBoxSize(), mJetBoyY, board, 4, context));
+        level1.add(new Wall(mJetBoyX+5*getBoxSize(), mJetBoyY, board, 6, context));
+        level1.add(new Wall(mJetBoyX+6*getBoxSize(), mJetBoyY, board, 2, context));
         level1.add(new Wall(mJetBoyX+12*getBoxSize(), mJetBoyY, board, 8, context));
-        level1.add(null);
-        level1.add(null);
-        level1.add(null);
-        level1.add(null);
-        level1.add(new Wall(mJetBoyX+17*getBoxSize(), mJetBoyY, board, 6, context));
-        level1.add(null);
-        level1.add(null);
-        level1.add(null);
+        level1.add(new Wall(mJetBoyX+17*getBoxSize(), mJetBoyY, board, 3, context));
 
         return level1;
+    }
+
+    public void collision(ArrayList<Wall> greateWall, Box myBox) {
+        for (Wall temp: greateWall) {
+            Point checkPoint = new Point(temp.getWidth(), 0);
+            Point range = new Point(temp.getWidth(), 0);
+            if(inRange(myBox, checkPoint, ))
+        }
+    }
+
+    // Check if number x in a range
+    public boolean inRange(int xCheck, int x, int range) {
+        if((xCheck <= x+range) && (xCheck >= x)) {
+            return true;
+        }
+        return false;
+    }
+
+    // Check box colidate rectangle
+    public boolean rectangleColidate(Box checkBox, Point wall_top_left, Point range) {
+        boolean inRangeX = inRange(checkBox.getPosisiton().x, wall_top_left.x, range.x); // range.x is box_width
+        boolean inRangeY = inRange(checkBox.getPosisiton().y, wall_top_left.y - checkBox.getWidth(), range.y); // top-left box need some mod, range.y equal 0
+
+        if(inRangeX && inRangeY) {
+            return true;
+        }
+        return false;
     }
 }

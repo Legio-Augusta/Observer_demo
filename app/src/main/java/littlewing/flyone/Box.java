@@ -28,11 +28,12 @@ public class Box extends Observable {
     private int rotation; // goc quay cua box
     private int gravity = 3;
     private boolean isJumping; // box jumping or not
+    private boolean isDead; // box die or live
 
     private Point box_pos;
 
     private int box_velocity;
-    Bitmap box_img[] = new Bitmap[4];
+    Bitmap box_img[] = new Bitmap[5];
     private int box_idx;			// index for box sprite images
 
     public Box(int x, int y, Point board, Context context) {
@@ -43,6 +44,7 @@ public class Box extends Observable {
         box_img[1] = BitmapFactory.decodeResource(mRes, R.drawable.box_blue_90); // box rotated 90 degrees
         box_img[2] = BitmapFactory.decodeResource(mRes, R.drawable.box_blue_180);
         box_img[3] = BitmapFactory.decodeResource(mRes, R.drawable.box_blue_270);
+        box_img[3] = BitmapFactory.decodeResource(mRes, R.drawable.effect_09);
 
         for(int i=0; i <= 3; i++) {
             box_img[i] = Bitmap.createScaledBitmap(box_img[i], getBoxSize(board.y), getBoxSize(board.y), true);       // scale box image size
@@ -83,11 +85,11 @@ public class Box extends Observable {
         this.height = size.y;
     }
 
-    public int getBoxX() {
+    public int getWidth() {
         return this.width;
     }
 
-    public int getBoxY() {
+    public int getHeight() {
         return this.height;
     }
 
@@ -148,5 +150,13 @@ public class Box extends Observable {
 
     public void setGravity(int gravity) {
         this.gravity = gravity;
+    }
+
+    public boolean isDead() {
+        return isDead;
+    }
+
+    public void setDead(boolean isDead) {
+        this.isDead = isDead;
     }
 }
