@@ -383,10 +383,10 @@ public class BoxJumpGame {
 
     public ArrayList<Wall> getLevel() {
         ArrayList<Wall> level1 = new ArrayList<Wall>();
-        level1.add(new Wall(mJetBoyX-2*getBoxSize(), mJetBoyY, board, 4, context));
+        level1.add(new Wall(mJetBoyX-1*getBoxSize(), mJetBoyY, board, 4, context));
         level1.add(new Wall(mJetBoyX+5*getBoxSize(), mJetBoyY, board, 6, context));
         level1.add(new Wall(mJetBoyX+6*getBoxSize(), mJetBoyY, board, 2, context));
-        level1.add(new Wall(mJetBoyX+12*getBoxSize(), mJetBoyY, board, 10, context));
+        level1.add(new Wall(mJetBoyX+12*getBoxSize(), mJetBoyY, board, 8, context));
         level1.add(new Wall(mJetBoyX+17*getBoxSize(), mJetBoyY, board, 3, context));
 
         return level1;
@@ -395,6 +395,8 @@ public class BoxJumpGame {
     public void collision(ArrayList<Wall> greateWall, Box myBox) {
         for (Wall temp: greateWall) {
             Point wall_top_left = temp.getPosisiton();
+            wall_top_left.set(wall_top_left.x, wall_top_left.y-temp.getHeight()); // set  wall's height to top-left
+
             Point range = new Point(temp.getWidth(), 0);
             if(rectangleColidate(myBox, wall_top_left, range)) {
                 Log.e(TAG, "collision " + myBox.getPosisiton().x + " y " + myBox.getPosisiton().y + " wall tl " +wall_top_left.x);
@@ -417,7 +419,7 @@ public class BoxJumpGame {
         boolean inRangeX = inRange(checkBox.getPosisiton().x, wall_top_left.x, range.x); // range.x is box_width
         boolean inRangeY = false;
         // top-left box need some mod
-        if(checkBox.getPosisiton().y >= (wall_top_left.y - checkBox.getWidth()) ) {
+        if(checkBox.getPosisiton().y >= (wall_top_left.y - checkBox.getWidth()) ) { // box height mod
             inRangeY = true;
         }
 
