@@ -142,7 +142,6 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
 
         // I wanted them to rotate in a certain way
         // so I loaded them backwards from the way created.
-        mAsteroids = boxjump.loadAsteroid(mAsteroids, mContext);
 
         mExplosions = boxjump.loadExplosion(mExplosions, mContext);
 
@@ -279,8 +278,6 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
 //            return;
 //        }
 
-        doAsteroidAnimation(canvas);
-
     }
 
     private void setInitialGameState() {
@@ -295,51 +292,12 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
 
         boxjump.setTimer(new Timer());
 
-        boxjump.mDangerWillRobinson = new Vector<Asteroid>();
-
         boxjump.mExplosion = new Vector<Explosion>();
 
         boxjump.mInitialized = true;
 
         boxjump.mHitStreak = 0;
         boxjump.mHitTotal = 0;
-    }
-
-    private void doAsteroidAnimation(Canvas canvas) {
-        if ((boxjump.getDangerWillRobinson() == null | boxjump.getDangerWillRobinson().size() == 0)
-                && (boxjump.mExplosion != null && boxjump.mExplosion.size() == 0))
-            return;
-
-        // Compute what percentage through a beat we are and adjust
-        // animation and position based on that. This assumes 140bpm(428ms/beat).
-        // This is just inter-beat interpolation, no game state is updated
-        long frameDelta = System.currentTimeMillis() - boxjump.getLastBeatTime();
-
-        int animOffset = (int)(ANIMATION_FRAMES_PER_BEAT * frameDelta / 428);
-
-        for (int i = (boxjump.getDangerWillRobinson().size() - 1); i >= 0; i--) {
-            Vector dangerRobinson = boxjump.getDangerWillRobinson();
-            Asteroid asteroid = (Asteroid)dangerRobinson.elementAt(i);
-
-            if (!asteroid.mMissed)
-                boxjump.mJetBoyY = asteroid.mDrawY;
-
-            // Log.d(TAG, " drawing asteroid " + ii + " at " +
-            // asteroid.mDrawX );
-
-            canvas.drawBitmap(
-                    mAsteroids[(asteroid.mAniIndex + animOffset) % mAsteroids.length],
-                    asteroid.mDrawX, asteroid.mDrawY, null);
-        }
-
-        for (int i = (boxjump.mExplosion.size() - 1); i >= 0; i--) {
-            Explosion ex = boxjump.mExplosion.elementAt(i);
-
-            canvas.drawBitmap(mExplosions[(ex.mAniIndex + animOffset) % mExplosions.length],
-                    ex.mDrawX, ex.mDrawY, null);
-        }
-
-        this.angle += 0.1;
     }
 
     private void doDrawReady(Canvas canvas) {
@@ -479,9 +437,6 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
                     // new explosions that we do not want updated until next
                     // frame
                     updateExplosions(boxjump.mKeyContext);
-
-                    // Update asteroid positions, hit status and animations
-                    updateAsteroids(boxjump.mKeyContext);
                 }
 
                 processJetEvent(jetEvent.player, jetEvent.segment, jetEvent.track,
@@ -565,68 +520,6 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
     }
 
     /**
-     * Update asteroid state including position and laser hit status.
-     */
-    protected void updateAsteroids(Object inputContext) {
-        if (boxjump.mDangerWillRobinson == null | boxjump.mDangerWillRobinson.size() == 0)
-            return;
-
-        for (int i = (boxjump.mDangerWillRobinson.size() - 1); i >= 0; i--) {
-            Asteroid asteroid = boxjump.mDangerWillRobinson.elementAt(i);
-
-            // If the asteroid is within laser range but not already missed
-            // check if the key was pressed close enough to the beat to make a hit
-            if (asteroid.mDrawX <= boxjump.mAsteroidMoveLimitX + 20 && !asteroid.mMissed)
-            {
-                // If the laser was fired on the beat destroy the asteroid
-                if (boxjump.mLaserOn) {
-                    // Track hit streak for adjusting music
-                    boxjump.mHitStreak++;
-                    boxjump.mHitTotal++;
-
-                    // replace the asteroid with an explosion
-                    Explosion ex = new Explosion();
-                    ex.mAniIndex = 0;
-                    ex.mDrawX = asteroid.mDrawX;
-                    ex.mDrawY = asteroid.mDrawY;
-                    boxjump.mExplosion.add(ex);
-
-//                    mJet.setMuteFlag(24, false, false);
-
-                    boxjump.getDangerWillRobinson().removeElementAt(i);
-
-                    // This asteroid has been removed process the next one
-                    continue;
-                } else {
-                    // Sorry, timing was not good enough, mark the asteroid
-                    // as missed so on next frame it cannot be hit even if it is still
-                    // within range
-                    asteroid.mMissed = true;
-
-                    boxjump.mHitStreak = boxjump.mHitStreak - 1;
-
-                    if (boxjump.mHitStreak < 0)
-                        boxjump.mHitStreak = 0;
-
-                }
-            }
-
-            // Update the asteroids position, even missed ones keep moving
-            asteroid.mDrawX -= boxjump.getPixelMoveX();
-            asteroid.mDrawY += boxjump.getPixelMoveX(); // dungnv add. asteroid move down
-
-            // Update asteroid animation frame
-            asteroid.mAniIndex = (asteroid.mAniIndex + ANIMATION_FRAMES_PER_BEAT)
-                    % mAsteroids.length;
-
-            // if we have scrolled off the screen
-            if (asteroid.mDrawX < 0) {
-                boxjump.getDangerWillRobinson().removeElementAt(i);
-            }
-        }
-    }
-
-    /**
      * This method updates explosion animation and removes them once they
      * have completed.
      */
@@ -660,9 +553,6 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
         //        + " cntrlr=" + controller + " val=" + value);
 
         // Check for an event that triggers a new asteroid
-        if (value == NEW_ASTEROID_EVENT) {
-            doAsteroidCreation();
-        }
 
         boxjump.setBeatCount(boxjump.getBeatCount() +1);
 
@@ -756,23 +646,6 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
                 }
             }
         }
-    }
-
-    private void doAsteroidCreation() {
-        // Log.d(TAG, "asteroid created");
-
-        Asteroid _as = new Asteroid();
-
-        int drawIndex = boxjump.getRandom().nextInt(4);
-
-        // TODO Remove hard coded value
-        _as.mDrawY = boxjump.mAsteroidMinY + (drawIndex * 63);
-
-        _as.mDrawX = (boxjump.getCanvasWidth() - mAsteroids[0].getWidth());
-
-        _as.mStartTime = System.currentTimeMillis();
-
-        boxjump.mDangerWillRobinson.add(_as);
     }
 
     /**

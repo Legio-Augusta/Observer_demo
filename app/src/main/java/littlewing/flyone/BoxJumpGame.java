@@ -129,9 +129,6 @@ public class BoxJumpGame {
     // used to track the picture to draw for ship animation
     private int mShipIndex = 0;
 
-    // stores all of the asteroid objects in order
-    public Vector<Asteroid> mDangerWillRobinson;
-
     public Vector<Explosion> mExplosion;
 
     // right to left scroll tracker for near and far BG
@@ -210,24 +207,6 @@ public class BoxJumpGame {
         mBeam[3] = BitmapFactory.decodeResource(mRes, R.drawable.effect_12);
 
         return mBeam;
-    }
-
-    public Bitmap[] loadAsteroid(Bitmap[] mAsteroids, Context mContext) {
-        Resources mRes = mContext.getResources();
-        mAsteroids[11] = BitmapFactory.decodeResource(mRes, R.drawable.boss1_08); // ast01
-        mAsteroids[10] = BitmapFactory.decodeResource(mRes, R.drawable.boss3_08);
-        mAsteroids[9] = BitmapFactory.decodeResource(mRes, R.drawable.boss5_08);
-        mAsteroids[8] = BitmapFactory.decodeResource(mRes, R.drawable.boss18); // ast04
-        mAsteroids[7] = BitmapFactory.decodeResource(mRes, R.drawable.boss37);
-        mAsteroids[6] = BitmapFactory.decodeResource(mRes, R.drawable.boss2_08);
-        mAsteroids[5] = BitmapFactory.decodeResource(mRes, R.drawable.boss26);
-        mAsteroids[4] = BitmapFactory.decodeResource(mRes, R.drawable.boss66); //ast08
-        mAsteroids[3] = BitmapFactory.decodeResource(mRes, R.drawable.boss6_08);
-        mAsteroids[2] = BitmapFactory.decodeResource(mRes, R.drawable.boss6_08);
-        mAsteroids[1] = BitmapFactory.decodeResource(mRes, R.drawable.boss6_08);
-        mAsteroids[0] = BitmapFactory.decodeResource(mRes, R.drawable.boss6_08);
-
-        return mAsteroids;
     }
 
     public Bitmap[] loadExplosion(Bitmap[] mExplosions, Context mContext) {
@@ -349,14 +328,6 @@ public class BoxJumpGame {
 
     public void setTimer(Timer timer) {
         this.mTimer = timer;
-    }
-
-    public Vector getDangerWillRobinson() {
-        return this.mDangerWillRobinson;
-    }
-
-    public void setDangerWillRobinson(Vector robinson) {
-        this.mDangerWillRobinson = robinson;
     }
 
     public int getPixelMoveX() {
