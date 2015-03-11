@@ -133,7 +133,6 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
         mBackgroundImageTwo = BitmapFactory.decodeResource(mRes, R.drawable.background2_07); // bg_b
 
 
-        mOrange = boxjump.loadOrangeBox(mOrange, mContext);
         mOrange = boxjump.loadBaseLine(mLine, mContext);
 
         mBeam = boxjump.loadBeam(mBeam, mContext);
@@ -244,40 +243,18 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
         // same story different image...
         // TODO possible method call
 
-//        canvas.drawBitmap(mBackgroundImageNear, 0, 0, null);
-
-        // same story different image...
-
-//        canvas.drawBitmap(mBackgroundImageTwo, 0, 720, null);  // 720 la hard fix
-
-//        canvas.drawBitmap(mBeam[boxjump.getShipIndex()], boxjump.getCanvasWidth()/2 - 51, boxjump.getCanvasHeight()/2 + 320, null);  // y old code use m-num ?
-
-//        boxjump.setShipIndex(boxjump.getShipIndex() +1);
-
         // TODO bo switch index de cho ham timer xu ly
         if (boxjump.getShipIndex() == 4)
             boxjump.setShipIndex(0);
 
-        //canvas.drawBitmap(mShipFlying[boxjump.getShipIndex()], (boxjump.mJetBoyX += 10), boxjump.getCanvasHeight() - 181, null);
-        boxjump.drawBoxRunning(canvas, mShipFlying);
+        boxjump.drawBoxRunning(canvas);
 
-//        boxjump.drawOrangeWall(canvas, mOrange);
         boxjump.drawBaseLine(canvas, mLine);
+        boxjump.drawGreateWall(canvas);
 
         if (boxjump.mLaserOn) { // Tat laser di, ko dung.
-//            canvas.drawBitmap(mLaserShot, boxjump.mJetBoyX, boxjump.mJetBoyY + 32, null);
             Log.d(boxjump.TAG, " drawing shot " + boxjump.mJetBoyX + " at " + boxjump.mJetBoyY);
         }
-
-        // tick tock
-//        canvas.drawBitmap(mTimerShell, 0, 0, null); // mCanvasWidth - mTimerShell.getWidth()
-
-//        try {
-//            Thread.sleep(100);                 //1000 milliseconds is one second.
-//        } catch(InterruptedException ex) {
-//            return;
-//        }
-
     }
 
     private void setInitialGameState() {
@@ -364,9 +341,6 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
                 } else if (boxjump.mState == boxjump.STATE_LOSE) {
                     boxjump.mInitialized = false;
                 }
-                //            else {
-                //                return; // Default
-                //            }
 
                 try {
                     c = mSurfaceHolder.lockCanvas(null);

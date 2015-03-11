@@ -26,6 +26,7 @@ public class Box extends Observable {
     private int box_y;
 
     private int rotation; // goc quay cua box
+    private int gravity = 3;
     private boolean isJumping; // box jumping or not
 
     private Point box_pos;
@@ -139,5 +140,13 @@ public class Box extends Observable {
 
     public void rotate(int angle) {
         this.rotation += angle;
+    }
+
+    public int getGravity() {
+        return gravity;
+    }
+
+    public void setGravity(int gravity) {
+        this.gravity = gravity;
     }
 }

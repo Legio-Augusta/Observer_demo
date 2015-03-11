@@ -10,6 +10,7 @@ import android.graphics.Point;
 import android.os.Handler;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -31,19 +32,8 @@ public class BoxJumpGame {
     public static final int STATE_PAUSE = 2;
     public static final int STATE_RUNNING = 3;
 
-    public static final int LEFT = 0;
-    public static final int RIGHT = 1;
-    public static final int UP = 2;
-    public static final int DOWN = 3;
-
     public static final int DIR_LEFT = 1;
     public static final int DIR_RIGHT = -1;
-    public static final int DIR_UP = 1;
-    public static final int DIR_DOWN = -1;
-
-    public static final double GRAVITY = 9.81;
-    public static double time = 0;
-    private double cosAlpha = 0.71; // sqrt(2)/2
 
     private int yVel = 0;
     private int characterGround = 480; // TODO
@@ -129,11 +119,6 @@ public class BoxJumpGame {
 
     public Vector<Explosion> mExplosion;
 
-    // right to left scroll tracker for near and far BG
-    private int mBGFarMoveX = 0;
-    private int mBGNearMoveX = 0;
-    private int mBGTwoMoveX = 0;
-
     // screen width, height
     private int mWidth = 720; //(int)getWidth();
     private int mHeight = 1280; //(int)getHeight();
@@ -143,32 +128,15 @@ public class BoxJumpGame {
     public int mJetBoyX = (int)mWidth/2; //0;
     public int mJetBoyY = (int)mHeight*3/4; //0;
 
-    // this is the pixel position of the laser beam guide.
-    public int mAsteroidMoveLimitX = 110;
-
-    // how far up asteroid can be painted
-    public int mAsteroidMinY = 40;
-
-    // array to store the mute masks that are applied during game play to respond to
-    // the player's hit streaks
-
-    public static final String TAG = "JetBoy";
-
-    private double angle = 0;  // angle of bernoulli curve
-
+    public static final String TAG = "BoxJump";
 
     // Direction moving
     public int MOVE_DIR = 0; // moving dir
 
-    // Speed of BG move
-    private int FarBGSpeed = 0;
-    private int NearBGSpeed = 0;
-
-    public int rotation = 0;
-
-    private Context context;
+    public Context context;
     Point board = new Point(mWidth, mHeight);
-    public Box myBox;
+    private Box myBox;
+    private Wall myWall;
 
     public BoxJumpGame() {
         super();
@@ -178,23 +146,7 @@ public class BoxJumpGame {
         super();
         this.context = context;
         myBox = new Box(mJetBoyX, mJetBoyY, board, context);
-    }
-
-    public Bitmap[] loadShip(Bitmap[] mShipFlying, Context mContext) {
-        Resources mRes = mContext.getResources();
-        mShipFlying[0] = BitmapFactory.decodeResource(mRes, R.drawable.box_blue); // ship2_1
-        mShipFlying[1] = BitmapFactory.decodeResource(mRes, R.drawable.box_blue_90); // ship2_1
-        mShipFlying[2] = BitmapFactory.decodeResource(mRes, R.drawable.box_blue_180); // ship2_1
-        mShipFlying[3] = BitmapFactory.decodeResource(mRes, R.drawable.box_blue_270); // ship2_1
-
-        // scale box by scr_size
-        for(int i=0; i <= 3; i++) {
-            mShipFlying[i] = Bitmap.createScaledBitmap(mShipFlying[i], getBoxSize(), getBoxSize(), true);
-        }
-        // rotate or use sprite ?
-        // tam thoi giu 4 sprite
-
-        return mShipFlying;
+        myWall = new Wall(mJetBoyX, mJetBoyY, board, 6, context); // scale 6/4
     }
 
     public Bitmap[] loadBeam(Bitmap[] mBeam, Context mContext) {
@@ -216,15 +168,6 @@ public class BoxJumpGame {
         mExplosions[3] = BitmapFactory.decodeResource(mRes, R.drawable.effect_09);
 
         return mExplosions;
-    }
-
-    public Bitmap[] loadOrangeBox(Bitmap[] mOrange, Context mContext) {
-        Resources mRes = mContext.getResources();
-
-        mOrange[0] = BitmapFactory.decodeResource(mRes, R.drawable.orange);
-        mOrange[0] = Bitmap.createScaledBitmap(mOrange[0], getBoxSize(), getBoxSize(), true);
-
-        return mOrange;
     }
 
     public Bitmap[] loadBaseLine(Bitmap[] mLine, Context mContext) {
@@ -256,28 +199,12 @@ public class BoxJumpGame {
         this.mCanvasHeight = canvasHeight;
     }
 
-    public int getScreenWidth() {
-        return this.mWidth;
-    }
-
     public void setScreenWidth(int scr_width) {
         this.mWidth = scr_width;
     }
 
-    public int getScreenHeight() {
-        return this.mHeight;
-    }
-
-    public void setScreenHeight(int scr_height) {
-        this.mHeight = scr_height;
-    }
-
     public void setLastBeatTime(long time) {
         this.mLastBeatTime = time;
-    }
-
-    public int getTIMER_LIMIT() {
-        return this.TIMER_LIMIT;
     }
 
     public int getTIMER_EVENT() {
@@ -328,14 +255,6 @@ public class BoxJumpGame {
         this.mTimer = timer;
     }
 
-    public int getPixelMoveX() {
-        return mPixelMoveX;
-    }
-
-    public void setPixelMoveX(int mPixelMoveX) {
-        this.mPixelMoveX = mPixelMoveX;
-    }
-
     public long getLastBeatTime() {
         return mLastBeatTime;
     }
@@ -364,22 +283,10 @@ public class BoxJumpGame {
         this.mBeatCount = mBeatCount;
     }
 
-    public void drawBoxRunning(Canvas canvas, Bitmap[] mShipFlying) {
-        // Test gravity jumping
-        double velocityX = 0, velocityY = 0;
-
-        int veloStart = 10;
-
-        velocityX = veloStart * cosAlpha * time; // max 10*.7*3 = 21
-//        velocityY = (veloStart * sinAlpha * time) + (GRAVITY*time*time); // ~242 max
-
+    public void drawBoxRunning(Canvas canvas) {
         Point curPos = myBox.getPosisiton();
         myBox.boxMoveX(BOX_STEP);
-
         Log.e(TAG, "box-x " + curPos.x + " box-y: " +curPos.y);
-        Log.e(TAG, "CV Wd " + getCanvasWidth() + " CV HEI: " +getCanvasHeight());
-
-        double gravity = 3;
 
         Matrix matrix = new Matrix();
 
@@ -398,7 +305,7 @@ public class BoxJumpGame {
             // Neu set o box_step thi lam cho box chay qua nhanh
             //TODO tim nguyen nhan lieu co phai do dong bo sync time khong.
 
-            yVel += gravity;
+            yVel += myBox.getGravity();
 
             myBox.setPosition(new Point(curPos.x, (curPos.y+=yVel) ));
 
@@ -436,11 +343,20 @@ public class BoxJumpGame {
             myBox.setJumping(true);
         }
     }
-    public void drawOrangeWall(Canvas canvas, Bitmap[] mOrange) {
-        for(int i=0; i<25; i++) {
-            canvas.drawBitmap(mOrange[0], (getStartLeft() + i * mOrange[0].getWidth()), getCanvasHeight() - 181, null);
-        }
+    public void drawWall(Canvas canvas, Wall wall) {
+        if(wall != null) {
+            Log.e(TAG, "wall_height " + wall.getHeight() + " pos " + wall.getPosisiton().y + " ground " + characterGround);
 
+            canvas.drawBitmap(wall.getCurrentSprite(), wall.getPosisiton().x, wall.getPosisiton().y - wall.getHeight() + getBoxSize(), null);
+        }
+    }
+
+    public void drawGreateWall(Canvas canvas) {
+        ArrayList<Wall> level1 = getLevel();
+
+        for (Wall temp: level1) {
+            drawWall(canvas, temp);
+        }
     }
 
     public void drawBaseLine(Canvas line, Bitmap[] mLine) {
@@ -460,5 +376,31 @@ public class BoxJumpGame {
 
     private int getStartLeft() {
         return mHeight/12; // scrn_width chia lam 12 phan --> can phai 1 phan con 11.
+    }
+
+    public ArrayList<Wall> getLevel() {
+        ArrayList<Wall> level1 = new ArrayList<Wall>();
+        level1.add(null);
+        level1.add(null);
+        level1.add(new Wall(mJetBoyX+3*getBoxSize(), mJetBoyY, board, 4, context));
+        level1.add(null);
+        level1.add(null);
+        level1.add(null);
+        level1.add(new Wall(mJetBoyX+7*getBoxSize(), mJetBoyY, board, 6, context));
+        level1.add(new Wall(mJetBoyX+8*getBoxSize(), mJetBoyY, board, 2, context));
+        level1.add(null);
+        level1.add(null);
+        level1.add(null);
+        level1.add(new Wall(mJetBoyX+12*getBoxSize(), mJetBoyY, board, 8, context));
+        level1.add(null);
+        level1.add(null);
+        level1.add(null);
+        level1.add(null);
+        level1.add(new Wall(mJetBoyX+17*getBoxSize(), mJetBoyY, board, 6, context));
+        level1.add(null);
+        level1.add(null);
+        level1.add(null);
+
+        return level1;
     }
 }
