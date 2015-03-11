@@ -72,8 +72,6 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
     // JET info: the star of our show, a reference to the JetPlayer object.
     private JetPlayer mJet = null;
 
-    private Craft angel; // Angel instance
-
     Resources mRes;
 
     /** Handle to the surface manager object we interact with */
@@ -147,7 +145,6 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
 
         mExplosions = boxjump.loadExplosion(mExplosions, mContext);
 
-        angel = new Craft(480, 640, mAsteroids);
     }
 
     /**
@@ -342,12 +339,6 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
         }
 
         this.angle += 0.1;
-        this.angel.bernoulliMove(angle);
-        // fix-me
-        Log.e(boxjump.TAG, "angel " + angel.getDonaldX() + " y " + angel.getDonaldY());
-
-        canvas.drawBitmap(angel.getBossImage(), angel.getDonaldX(), angel.getDonaldY(), null);
-
     }
 
     private void doDrawReady(Canvas canvas) {

@@ -431,9 +431,6 @@ public class BoxJumpGame {
             canvas.drawBitmap(mShipFlying[getShipIndex()], matrix, null);
         }
 
-//        canvas.drawBitmap(mShipFlying[getShipIndex()], matrix, null);
-//        canvas.drawBitmap(mShipFlying[getShipIndex()], mJetBoyX, mJetBoyY, null);
-
         if(mJetBoyX >= getBounce()) {
             mJetBoyX = getStartLeft();
             // win, new level
