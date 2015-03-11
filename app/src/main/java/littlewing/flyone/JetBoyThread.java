@@ -205,8 +205,6 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
         // JET info: the player hasn't scored yet.
         mJet.setMuteArray(muteMask[0], true);
 
-        Log.d(boxjump.TAG, " start queuing jet file DONE");
-
     }
 
 

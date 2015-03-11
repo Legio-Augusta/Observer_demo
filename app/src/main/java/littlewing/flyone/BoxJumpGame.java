@@ -145,7 +145,7 @@ public class BoxJumpGame {
     public BoxJumpGame(Context context) {
         super();
         this.context = context;
-        myBox = new Box(mJetBoyX, mJetBoyY, board, context);
+        myBox = new Box(getStartLeft(), mJetBoyY, board, context);
         myWall = new Wall(mJetBoyX, mJetBoyY, board, 6, context); // scale 6/4
     }
 
@@ -286,10 +286,10 @@ public class BoxJumpGame {
     public void drawBoxRunning(Canvas canvas) {
         Point curPos = myBox.getPosisiton();
         myBox.boxMoveX(BOX_STEP);
-        Log.e(TAG, "box-x " + curPos.x + " box-y: " +curPos.y);
 
         Matrix matrix = new Matrix();
 
+        collision(getLevel(), myBox);
         if (myBox.isJumping()) {
 
             myBox.rotate(10);
@@ -302,6 +302,7 @@ public class BoxJumpGame {
             canvas.drawBitmap(myBox.getCurrentSprite(), matrix, null);
 
             myBox.boxMoveX(3);   // Hieu chinh toc do box chay ngang
+            collision(getLevel(), myBox);
             // Neu set o box_step thi lam cho box chay qua nhanh
             //TODO tim nguyen nhan lieu co phai do dong bo sync time khong.
             // yVel to boxUpward()
@@ -309,6 +310,7 @@ public class BoxJumpGame {
             yVel += myBox.getGravity();
 
             myBox.setPosition(new Point(curPos.x, (curPos.y+=yVel) ));
+            collision(getLevel(), myBox);
 
             if (curPos.y > characterGround) {  // Box chim qua sau --> cho noi len mat nc
                 curPos.y = characterGround;
@@ -346,7 +348,7 @@ public class BoxJumpGame {
     }
     public void drawWall(Canvas canvas, Wall wall) {
         if(wall != null) {
-            Log.e(TAG, "wall_height " + wall.getHeight() + " pos " + wall.getPosisiton().y + " ground " + characterGround);
+//            Log.e(TAG, "wall_height " + wall.getHeight() + " pos " + wall.getPosisiton().y + " ground " + characterGround);
 
             canvas.drawBitmap(wall.getCurrentSprite(), wall.getPosisiton().x, wall.getPosisiton().y - wall.getHeight() + getBoxSize(), null);
         }
@@ -384,7 +386,7 @@ public class BoxJumpGame {
         level1.add(new Wall(mJetBoyX-2*getBoxSize(), mJetBoyY, board, 4, context));
         level1.add(new Wall(mJetBoyX+5*getBoxSize(), mJetBoyY, board, 6, context));
         level1.add(new Wall(mJetBoyX+6*getBoxSize(), mJetBoyY, board, 2, context));
-        level1.add(new Wall(mJetBoyX+12*getBoxSize(), mJetBoyY, board, 8, context));
+        level1.add(new Wall(mJetBoyX+12*getBoxSize(), mJetBoyY, board, 10, context));
         level1.add(new Wall(mJetBoyX+17*getBoxSize(), mJetBoyY, board, 3, context));
 
         return level1;
@@ -392,15 +394,19 @@ public class BoxJumpGame {
 
     public void collision(ArrayList<Wall> greateWall, Box myBox) {
         for (Wall temp: greateWall) {
-            Point checkPoint = new Point(temp.getWidth(), 0);
+            Point wall_top_left = temp.getPosisiton();
             Point range = new Point(temp.getWidth(), 0);
-            if(inRange(myBox, checkPoint, ))
+            if(rectangleColidate(myBox, wall_top_left, range)) {
+                Log.e(TAG, "collision " + myBox.getPosisiton().x + " y " + myBox.getPosisiton().y + " wall tl " +wall_top_left.x);
+                myBox.setPosition(new Point(getStartLeft(), mJetBoyY));  // reset box to begining
+                // dead ++
+            }
         }
     }
 
     // Check if number x in a range
     public boolean inRange(int xCheck, int x, int range) {
-        if((xCheck <= x+range) && (xCheck >= x)) {
+        if((xCheck <= x+range) && (xCheck >= (x-range))) {   // some mode for box collidate
             return true;
         }
         return false;
@@ -409,7 +415,11 @@ public class BoxJumpGame {
     // Check box colidate rectangle
     public boolean rectangleColidate(Box checkBox, Point wall_top_left, Point range) {
         boolean inRangeX = inRange(checkBox.getPosisiton().x, wall_top_left.x, range.x); // range.x is box_width
-        boolean inRangeY = inRange(checkBox.getPosisiton().y, wall_top_left.y - checkBox.getWidth(), range.y); // top-left box need some mod, range.y equal 0
+        boolean inRangeY = false;
+        // top-left box need some mod
+        if(checkBox.getPosisiton().y >= (wall_top_left.y - checkBox.getWidth()) ) {
+            inRangeY = true;
+        }
 
         if(inRangeX && inRangeY) {
             return true;
