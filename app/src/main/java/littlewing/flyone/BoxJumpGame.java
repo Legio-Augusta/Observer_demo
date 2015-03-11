@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.os.Handler;
 import android.util.Log;
 
@@ -170,8 +171,18 @@ public class BoxJumpGame {
 
     public int rotation = 0;
 
+    private Context context;
+    Point board = new Point(mWidth, mHeight);
+    public Box myBox;
+
     public BoxJumpGame() {
         super();
+    }
+
+    public BoxJumpGame(Context context) {
+        super();
+        this.context = context;
+        myBox = new Box(mJetBoyX, mJetBoyY, board, context);
     }
 
     public Bitmap[] loadShip(Bitmap[] mShipFlying, Context mContext) {
@@ -393,46 +404,51 @@ public class BoxJumpGame {
         velocityX = veloStart * cosAlpha * time; // max 10*.7*3 = 21
 //        velocityY = (veloStart * sinAlpha * time) + (GRAVITY*time*time); // ~242 max
 
-        mJetBoyX += BOX_STEP;
+        Point curPos = myBox.getPosisiton();
+        myBox.boxMoveX(BOX_STEP);
 
-        Log.e(TAG, "box-x " + mJetBoyX + " box-y: " +mJetBoyY);
+        Log.e(TAG, "box-x " + curPos.x + " box-y: " +curPos.y);
         Log.e(TAG, "CV Wd " + getCanvasWidth() + " CV HEI: " +getCanvasHeight());
 
         double gravity = 3;
 
         Matrix matrix = new Matrix();
 
-        if (isJumping) {
+        if (myBox.isJumping()) {
 
-            rotation += 10;
-            float px = mJetBoyX + this.getBoxSize()/2;
-            float py = mJetBoyY + this.getBoxSize()/2;
-            matrix.postTranslate(-mShipFlying[getShipIndex()].getWidth()/2, -mShipFlying[getShipIndex()].getHeight()/2);
+            myBox.rotate(10);
+            float px = curPos.x + myBox.getBoxSize(mHeight)/2;
+            float py = curPos.y + myBox.getBoxSize(mHeight)/2;
+            matrix.postTranslate(-myBox.getCurrentSprite().getWidth()/2, -myBox.getCurrentSprite().getHeight()/2);
 
-            matrix.postRotate(rotation); // Quay 180 hay 90
+            matrix.postRotate(myBox.getRotation()); // Quay 180 hay 90
             matrix.postTranslate(px, py);
-            canvas.drawBitmap(mShipFlying[getShipIndex()], matrix, null);
+            canvas.drawBitmap(myBox.getCurrentSprite(), matrix, null);
 
-            mJetBoyX += 4; // hard code
+            myBox.boxMoveX(4);   // Hieu chinh toc do box chay ngang
+            // Neu set o box_step thi lam cho box chay qua nhanh
+            //TODO tim nguyen nhan lieu co phai do dong bo sync time khong.
 
             yVel += gravity;
 
-            mJetBoyY += yVel;   // de - thi jump nhanh
+            myBox.setPosition(new Point(curPos.x, (curPos.y+=yVel) ));
 
-            if (mJetBoyY > characterGround) {  // Box chim qua sau --> cho noi len mat nc
-                mJetBoyY = characterGround;
+            if (curPos.y > characterGround) {  // Box chim qua sau --> cho noi len mat nc
+                curPos.y = characterGround;
+                myBox.setPosition(new Point(curPos.x, curPos.y));
                 yVel = 0;
-                isJumping = false;
+                myBox.setJumping(false);
             }
 
             // reset time to 0. If want independence - > use function.
         } else {
-            matrix.postTranslate(mJetBoyX, mJetBoyY);
-            canvas.drawBitmap(mShipFlying[getShipIndex()], matrix, null);
+            matrix.postTranslate(curPos.x, curPos.y);
+            canvas.drawBitmap(myBox.getCurrentSprite(), matrix, null);
         }
 
-        if(mJetBoyX >= getBounce()) {
-            mJetBoyX = getStartLeft();
+        if(curPos.x >= getBounce()) {
+            curPos.x = getStartLeft();
+            myBox.setPosition(new Point(curPos.x, curPos.y));
             // win, new level
         }
 
@@ -446,9 +462,9 @@ public class BoxJumpGame {
     // TODO apply this task
 
     public void jump() {
-        if (isJumping == false) {
+        if (myBox.isJumping() == false) {
             yVel = -30;
-            isJumping = true;
+            myBox.setJumping(true);
         }
     }
     public void drawOrangeWall(Canvas canvas, Bitmap[] mOrange) {

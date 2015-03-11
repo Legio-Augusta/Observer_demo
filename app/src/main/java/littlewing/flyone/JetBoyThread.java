@@ -39,7 +39,7 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
     // hit animation
     private Bitmap[] mExplosions = new Bitmap[4];
 
-    protected static BoxJumpGame boxjump = new BoxJumpGame();
+    protected static BoxJumpGame boxjump;
 
     /** The drawable to use as the far background of the animation canvas */
     private Bitmap mBackgroundImageFar;
@@ -99,6 +99,8 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
 
     public JetBoyThread(SurfaceHolder surfaceHolder, Context context, Handler handler) {
 
+        boxjump = new BoxJumpGame(context);
+
         mSurfaceHolder = surfaceHolder;
         mHandler = handler;
         mContext = context;
@@ -130,7 +132,6 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
         mBackgroundImageNear = BitmapFactory.decodeResource(mRes, R.drawable.bg1); // bg_b
         mBackgroundImageTwo = BitmapFactory.decodeResource(mRes, R.drawable.background2_07); // bg_b
 
-        mShipFlying = boxjump.loadShip(mShipFlying, mContext);
 
         mOrange = boxjump.loadOrangeBox(mOrange, mContext);
         mOrange = boxjump.loadBaseLine(mLine, mContext);
