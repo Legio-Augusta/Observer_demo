@@ -284,6 +284,8 @@ public class BoxJumpGame {
     }
 
     public void drawBoxRunning(Canvas canvas) {
+        // reset box img
+        myBox.setBoxIdx(0);
         Point curPos = myBox.getPosisiton();
         myBox.boxMoveX(BOX_STEP);
 
@@ -399,8 +401,8 @@ public class BoxJumpGame {
 
             Point range = new Point(temp.getWidth(), 0);
             if(rectangleColidate(myBox, wall_top_left, range)) {
-                Log.e(TAG, "collision " + myBox.getPosisiton().x + " y " + myBox.getPosisiton().y + " wall tl " +wall_top_left.x);
                 myBox.setPosition(new Point(getStartLeft(), mJetBoyY));  // reset box to begining
+                myBox.setExplode();
                 // dead ++
             }
         }
