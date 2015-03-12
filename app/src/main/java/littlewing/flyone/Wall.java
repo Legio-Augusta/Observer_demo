@@ -20,11 +20,15 @@ public class Wall implements Observer {
     private int height = 42;
 
     private Point box_pos;
+    private int lowerY; // Lower position of box, depend on wall position and height
 
     Bitmap box_img[] = new Bitmap[1]; // TODO, can use many for store color, level ?
 
     public Wall(int x, int y, Point board, int scale, Context context) {
         this.box_pos = new Point(x, y);
+
+        // lower height
+        // setPosition(x, y-height-lower_height);
 
         Resources mRes = context.getResources();
         this.box_img[0] = BitmapFactory.decodeResource(mRes, R.drawable.orange);

@@ -286,6 +286,11 @@ public class BoxJumpGame {
     public void drawBoxRunning(Canvas canvas) {
         // reset box img
         myBox.setBoxIdx(0);
+        if(myBox.getPosisiton().x == getStartLeft() && (myBox.getPosisiton().y < mJetBoyY)) {
+            // When reset, drop box to ground
+//            dropBox(canvas, myBox);
+        }
+
         Point curPos = myBox.getPosisiton();
         myBox.boxMoveX(BOX_STEP);
 
@@ -421,6 +426,8 @@ public class BoxJumpGame {
         boolean inRangeX = inRange(checkBox.getPosisiton().x, wall_top_left.x, range.x); // range.x is box_width
         boolean inRangeY = false;
         // top-left box need some mod
+
+        // TODO add tunnel checking, after add lower-height to wall
         if(checkBox.getPosisiton().y >= (wall_top_left.y - checkBox.getWidth()) ) { // box height mod
             inRangeY = true;
         }
@@ -429,5 +436,17 @@ public class BoxJumpGame {
             return true;
         }
         return false;
+    }
+
+    // Drop box a bit of time when start run.
+    public void dropBox(Canvas canvas, Box box) {
+        int drop_height = box.getHeight()*3;
+        // drop height
+        // drop time (may be hard to install)
+        box.setPosition(new Point(getStartLeft(), box.getPosisiton().y-drop_height));
+        for(int h = 0; h < drop_height; h+=6) {
+            canvas.drawBitmap(box.getCurrentSprite(), box.getPosisiton().x, box.getPosisiton().y - box.getHeight(), null);
+            box.setPosition(new Point(getStartLeft(), box.getPosisiton().y-h));
+        }
     }
 }
