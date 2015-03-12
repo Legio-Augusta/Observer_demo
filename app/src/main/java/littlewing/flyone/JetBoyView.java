@@ -107,8 +107,8 @@ public class JetBoyView extends SurfaceView implements SurfaceHolder.Callback {
                         if (mHitTotal >= mSuccessThreshold) {
                             mTextView.setText(R.string.winText);
                         } else {
-                            mTextView.setText("Sorry, You Lose! You got " + mHitTotal
-                                    + ". You need 50 to win.");
+                            mTextView.setText("You Lose! " + mHitTotal
+                                    + "kkk");
                         }
     
                         mTimerView.setText("1:12");
