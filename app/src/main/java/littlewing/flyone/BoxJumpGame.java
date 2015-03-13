@@ -388,7 +388,7 @@ public class BoxJumpGame {
         return mHeight/12; // scrn_width chia lam 12 phan --> can phai 1 phan con 11.
     }
 
-    public ArrayList<Wall> getLevel() {
+    public ArrayList<Wall> getLevel() { //TODO  int level
         ArrayList<Wall> level1 = new ArrayList<Wall>();
         level1.add(new Wall(mJetBoyX-1*getBoxSize(), mJetBoyY, board, 4, context));
         level1.add(new Wall(mJetBoyX+5*getBoxSize(), mJetBoyY, board, 6, context));
