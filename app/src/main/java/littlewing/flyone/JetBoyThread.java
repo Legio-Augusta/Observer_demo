@@ -224,7 +224,9 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
             doDrawReady(canvas);
         } else if (boxjump.mState == boxjump.STATE_PLAY || boxjump.mState == boxjump.STATE_LOSE) {
             if (boxjump.mTitleBG2 == null) {
-                boxjump.mTitleBG2 = BitmapFactory.decodeResource(mRes, R.drawable.intro_00_720); //title_bg_hori
+                boxjump.mTitleBG2 = BitmapFactory.decodeResource(mRes, R.drawable.intro_00_720); //title_bg_hori fix me
+                mBackgroundImageNear = Bitmap.createScaledBitmap(mBackgroundImageNear,
+                        boxjump.getCanvasWidth() * 1280/720, boxjump.getCanvasHeight()*760/606, true);
             }
             doDrawPlay(canvas);
         }// end state play block
@@ -251,7 +253,10 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
         boxjump.drawGreateWall(canvas);
 
         if (boxjump.mLaserOn) { // Tat laser di, ko dung.
-            Log.d(boxjump.TAG, " drawing shot " + boxjump.mJetBoyX + " at " + boxjump.mJetBoyY);
+//            Log.d(boxjump.TAG, " drawing shot " + boxjump.mJetBoyX + " at " + boxjump.mJetBoyY);
+        }
+        if(boxjump.mState == boxjump.STATE_WIN) { // win
+
         }
     }
 
@@ -276,12 +281,12 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
     }
 
     private void doDrawReady(Canvas canvas) {
-//        canvas.drawBitmap(boxjump.mTitleBG, 0, 0, null);
-//        try {
-//            canvas.drawBitmap(boxjump.mTitleBG, 0, 0, null);
-//        } catch (NullPointerException e) {
-//            System.exit(1);
-//        }
+        canvas.drawBitmap(boxjump.mTitleBG, 0, 0, null);
+        try {
+            canvas.drawBitmap(boxjump.mTitleBG, 0, 0, null);
+        } catch (NullPointerException e) {
+            System.exit(1);
+        }
 
     }
 
@@ -803,6 +808,8 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
         //Log.d(TAG,"Time left is " + mTimerLimit);
 
         boxjump.mTimerLimit = boxjump.mTimerLimit - 1;
+        // TODO increase time, not use this to check lose
+        /*
         try {
             //subtract one minute and see what the result is.
             int moreThanMinute = boxjump.mTimerLimit - 60;
@@ -815,7 +822,7 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
                 }
                 //need an extra '0' for formatting
                 else {
-                    boxjump.setTimerValue("1:0" + moreThanMinute);
+                    boxjump.setTimerValue("1:0" + moreThanMinute); // vai ca hard code time count down
                 }
             } else {
                 if (boxjump.mTimerLimit > 9) {
@@ -827,6 +834,7 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
         } catch (Exception e1) {
             Log.e(boxjump.TAG, "doCountDown threw " + e1.toString());
         }
+        */
 
         Message msg = mHandler.obtainMessage();
 
@@ -834,12 +842,14 @@ class JetBoyThread extends Thread implements JetPlayer.OnJetEventListener {
         b.putString("text", boxjump.getTimerValue());
 
         //time's up
-        if (boxjump.mTimerLimit == 0) {
-            b.putString("STATE_LOSE", "" + boxjump.STATE_LOSE);
-            boxjump.setTimerTask(null);
+//        if (boxjump.mTimerLimit == 0) {         // Do not count down
+        if (boxjump.mState == boxjump.STATE_WIN) {
+//            b.putString("STATE_LOSE", "" + boxjump.STATE_LOSE);
+            b.putString("STATE_WIN", "" + boxjump.STATE_WIN);
+//            boxjump.setTimerTask(null);
 
-            boxjump.mState = boxjump.STATE_LOSE;
-
+            boxjump.mState = boxjump.STATE_WIN;
+            boxjump.mHitTotal = 100; // Set threshold to win, fix me
         } else {
             boxjump.setTimerTask(new TimerTask() {
                 public void run() {

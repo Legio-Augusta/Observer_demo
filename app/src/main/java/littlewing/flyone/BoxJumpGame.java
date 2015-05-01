@@ -29,11 +29,14 @@ public class BoxJumpGame {
     public static final int STATE_START = -1;
     public static final int STATE_PLAY = 0;
     public static final int STATE_LOSE = 1;
+    public static final int STATE_WIN = 99;
     public static final int STATE_PAUSE = 2;
     public static final int STATE_RUNNING = 3;
 
     public static final int DIR_LEFT = 1;
     public static final int DIR_RIGHT = -1;
+    // Direction moving
+    public int MOVE_DIR = 0; // moving dir
 
     private int yVel = 0;
     private int characterGround = 480; // TODO
@@ -42,13 +45,10 @@ public class BoxJumpGame {
 
     // used to calculate level for mutes and trigger clip
     public int mHitStreak = 0;
-
     // total number asteroids you need to hit.
     public int mHitTotal = 0;
-
     // which music bed is currently playing?
     public int mCurrentBed = 0;
-
     // a lazy graphic fudge for the initial title splash
     public Bitmap mTitleBG;
 
@@ -62,32 +62,27 @@ public class BoxJumpGame {
     /** Context for processKey to maintain state accross frames * */
     protected Object mKeyContext = null;
 
+    /********************************* Old JetBoy variables  **************************************/
     // the timer display in seconds
     public int mTimerLimit;
-
     // used for internal timing logic.
     public final int TIMER_LIMIT = 72;
-
     // string value for timer display
     private String mTimerValue = "1:12";
-
     // start, play, running, lose are the states we use
     public int mState;
 
     // has laser been fired and for how long?
     // user for fx logic on laser fire
     boolean mLaserOn = true;
-
     long mLaserFireTime = 0;
 
     private final byte TIMER_EVENT = 82;
 
     // used to track beat for synch of mute/unmute actions
     private int mBeatCount = 1;
-
     // used to save the beat event system time.
     private long mLastBeatTime;
-
     private long mPassedTime;
 
     // how much do we move the asteroids per beat?
@@ -96,29 +91,22 @@ public class BoxJumpGame {
     // the asteroid send events are generated from the Jet File.
     // but which land they start in is random.
     private Random mRandom = new Random();
-
     private boolean mJetPlaying = false;
-
     /** Indicate whether the surface has been created & is ready to draw */
     private boolean mRun = false;
-
     // updates the screen clock. Also used for tempo timing.
     private Timer mTimer = null;
-
     private TimerTask mTimerTask = null;
-
     // one second - used to update timer
     public int mTaskIntervalInMillis = 1000;
 
-    private int mCanvasHeight = 1;
-
-    private int mCanvasWidth = 1;
+    /********************************** New box game variables added ******************************/
 
     // used to track the picture to draw for ship animation
     private int mShipIndex = 0;
-
     public Vector<Explosion> mExplosion;
-
+    private int mCanvasHeight = 1;
+    private int mCanvasWidth = 1;
     // screen width, height
     private int mWidth = 720; //(int)getWidth();
     private int mHeight = 1280; //(int)getHeight();
@@ -129,14 +117,15 @@ public class BoxJumpGame {
     public int mJetBoyY = (int)mHeight*3/4; //0;
 
     public static final String TAG = "BoxJump";
-
-    // Direction moving
-    public int MOVE_DIR = 0; // moving dir
+    private int LEVEL = 1;
+    private int MAX_LEVEL = 10; // max level
 
     public Context context;
     Point board = new Point(mWidth, mHeight);
     private Box myBox;
     private Wall myWall;
+
+    /********************************  End PARAMs declare *****************************************/
 
     public BoxJumpGame() {
         super();
@@ -147,6 +136,8 @@ public class BoxJumpGame {
         this.context = context;
         myBox = new Box(getStartLeft(), mJetBoyY, board, context);
         myWall = new Wall(mJetBoyX, mJetBoyY, board, 6, context); // scale 6/4
+        this.LEVEL = 1;
+        this.mHitTotal = 0;
     }
 
     public Bitmap[] loadBeam(Bitmap[] mBeam, Context mContext) {
@@ -178,6 +169,8 @@ public class BoxJumpGame {
 
         return mLine;
     }
+
+    /******************************* Some simple constructors and Functions ***********************/
 
     public void setJetPlaying(boolean bool) {
         this.mJetPlaying = bool;
@@ -283,11 +276,17 @@ public class BoxJumpGame {
         this.mBeatCount = mBeatCount;
     }
 
+    public void setLevel(int lvl) {
+        this.LEVEL = lvl;
+    }
+
+    /******************************* End simple constructors  *************************************/
+
     public void drawBoxRunning(Canvas canvas) {
         // reset box img
         myBox.setBoxIdx(0);
-        if(myBox.getPosisiton().x == getStartLeft() && (myBox.getPosisiton().y < mJetBoyY)) {
-            // When reset, drop box to ground
+        if (myBox.getPosisiton().x < (getStartLeft()+6)) {
+            // When reset, drop box to ground. TODO
 //            dropBox(canvas, myBox);
         }
 
@@ -296,7 +295,7 @@ public class BoxJumpGame {
 
         Matrix matrix = new Matrix();
 
-        collision(getLevel(), myBox);
+        collision(getLevel(LEVEL), myBox); // ArrayList and box checking
         if (myBox.isJumping()) {
 
             myBox.rotate(10);
@@ -309,7 +308,7 @@ public class BoxJumpGame {
             canvas.drawBitmap(myBox.getCurrentSprite(), matrix, null);
 
             myBox.boxMoveX(3);   // Hieu chinh toc do box chay ngang
-            collision(getLevel(), myBox);
+            collision(getLevel(LEVEL), myBox);
             // Neu set o box_step thi lam cho box chay qua nhanh
             //TODO tim nguyen nhan lieu co phai do dong bo sync time khong.
             // yVel to boxUpward()
@@ -317,7 +316,7 @@ public class BoxJumpGame {
             yVel += myBox.getGravity();
 
             myBox.setPosition(new Point(curPos.x, (curPos.y+=yVel) ));
-            collision(getLevel(), myBox);
+            collision(getLevel(LEVEL), myBox);
 
             if (curPos.y > characterGround) {  // Box chim qua sau --> cho noi len mat nc
                 curPos.y = characterGround;
@@ -332,13 +331,19 @@ public class BoxJumpGame {
             canvas.drawBitmap(myBox.getCurrentSprite(), matrix, null);
         }
 
-        if(curPos.x >= getBounce()) {
+        if(curPos.x >= getBounce()) {     // Box go over screen, put it from start.
             curPos.x = getStartLeft();
             myBox.setPosition(new Point(curPos.x, curPos.y));
             // win, new level
+            if(LEVEL < MAX_LEVEL) {
+                this.LEVEL++;
+            } else {
+                mState = STATE_WIN;
+            }
         }
 
     }
+    /***************************************** END doDraw() ****************************************/
 
     // In some game Engine, this task done by TWEEN
     // It will do thing in amount of TIME
@@ -362,7 +367,7 @@ public class BoxJumpGame {
     }
 
     public void drawGreateWall(Canvas canvas) {
-        ArrayList<Wall> level1 = getLevel();
+        ArrayList<Wall> level1 = getLevel(LEVEL);
 
         for (Wall temp: level1) {
             drawWall(canvas, temp);
@@ -388,15 +393,79 @@ public class BoxJumpGame {
         return mHeight/12; // scrn_width chia lam 12 phan --> can phai 1 phan con 11.
     }
 
-    public ArrayList<Wall> getLevel() { //TODO  int level
-        ArrayList<Wall> level1 = new ArrayList<Wall>();
-        level1.add(new Wall(mJetBoyX-1*getBoxSize(), mJetBoyY, board, 4, context));
-        level1.add(new Wall(mJetBoyX+5*getBoxSize(), mJetBoyY, board, 6, context));
-        level1.add(new Wall(mJetBoyX+6*getBoxSize(), mJetBoyY, board, 2, context));
-        level1.add(new Wall(mJetBoyX+12*getBoxSize(), mJetBoyY, board, 8, context));
-        level1.add(new Wall(mJetBoyX+17*getBoxSize(), mJetBoyY, board, 3, context));
+    public ArrayList<Wall> getLevel(int level_num) { //TODO  int level, or create class
+        ArrayList<Wall> level = new ArrayList<Wall>();
+        switch(level_num) {
+            case 1:
+                level.add(new Wall(mJetBoyX - 1 * getBoxSize(), mJetBoyY, board, 4, context));
+                level.add(new Wall(mJetBoyX + 12 * getBoxSize(), mJetBoyY, board, 8, context));
+                level.add(new Wall(mJetBoyX + 17 * getBoxSize(), mJetBoyY, board, 3, context));
+                break;
+            case 2:
+                level.add(new Wall(mJetBoyX + 12 * getBoxSize(), mJetBoyY, board, 8, context));
+                break;
+            case 3:
+                level.add(new Wall(mJetBoyX + 12 * getBoxSize(), mJetBoyY, board, 8, context));
+                level.add(new Wall(mJetBoyX + 17 * getBoxSize(), mJetBoyY, board, 4, context));
+                break;
+            case 4:
+                level.add(new Wall(mJetBoyX - 1 * getBoxSize(), mJetBoyY, board, 4, context));
+                level.add(new Wall(mJetBoyX + 5 * getBoxSize(), mJetBoyY, board, 6, context));
+                level.add(new Wall(mJetBoyX + 6 * getBoxSize(), mJetBoyY, board, 2, context));
+                level.add(new Wall(mJetBoyX + 12 * getBoxSize(), mJetBoyY, board, 8, context));
+                level.add(new Wall(mJetBoyX + 17 * getBoxSize(), mJetBoyY, board, 3, context));
+                break;
+            case 5:
+                level.add(new Wall(mJetBoyX - 1 * getBoxSize(), mJetBoyY, board, 8, context));
+                level.add(new Wall(mJetBoyX + 6 * getBoxSize(), mJetBoyY, board, 8, context));
+                level.add(new Wall(mJetBoyX + 11 * getBoxSize(), mJetBoyY, board, 8, context));
+                level.add(new Wall(mJetBoyX + 16 * getBoxSize(), mJetBoyY, board, 8, context));
+                break;
+            case 6:
+                level.add(new Wall(mJetBoyX + 5 * getBoxSize(), mJetBoyY, board, 6, context));
+                level.add(new Wall(mJetBoyX + 6 * getBoxSize(), mJetBoyY, board, 2, context));
+                level.add(new Wall(mJetBoyX + 12 * getBoxSize(), mJetBoyY, board, 8, context));
+                level.add(new Wall(mJetBoyX + 18 * getBoxSize(), mJetBoyY, board, 3, context));
+                break;
+            case 7:
+                level.add(new Wall(mJetBoyX + 1 * getBoxSize(), mJetBoyY, board, 4, context));
+                level.add(new Wall(mJetBoyX + 5 * getBoxSize(), mJetBoyY, board, 6, context));
+                level.add(new Wall(mJetBoyX + 9 * getBoxSize(), mJetBoyY, board, 6, context));
+                level.add(new Wall(mJetBoyX + 14 * getBoxSize(), mJetBoyY, board, 8, context));
+                level.add(new Wall(mJetBoyX + 18 * getBoxSize(), mJetBoyY, board, 3, context));
+                break;
+            case 8:
+                level.add(new Wall(mJetBoyX + 1 * getBoxSize(), mJetBoyY, board, 2, context));
+                level.add(new Wall(mJetBoyX + 2 * getBoxSize(), mJetBoyY, board, 4, context));
+                level.add(new Wall(mJetBoyX + 7 * getBoxSize(), mJetBoyY, board, 6, context));
+                level.add(new Wall(mJetBoyX + 8 * getBoxSize(), mJetBoyY, board, 4, context));
+                level.add(new Wall(mJetBoyX + 14 * getBoxSize(), mJetBoyY, board, 6, context));
+                level.add(new Wall(mJetBoyX + 15 * getBoxSize(), mJetBoyY, board, 6, context));
+                break;
+            case 9:
+                level.add(new Wall(mJetBoyX - 1 * getBoxSize(), mJetBoyY, board, 8, context));
+                level.add(new Wall(mJetBoyX + 6 * getBoxSize(), mJetBoyY, board, 8, context));
+                level.add(new Wall(mJetBoyX + 11 * getBoxSize(), mJetBoyY, board, 8, context));
+                level.add(new Wall(mJetBoyX + 16 * getBoxSize(), mJetBoyY, board, 8, context));
+                break;
+            case 10:
+                level.add(new Wall(mJetBoyX + 1 * getBoxSize(), mJetBoyY, board, 3, context));
+                level.add(new Wall(mJetBoyX + 2 * getBoxSize(), mJetBoyY, board, 3, context));
+                level.add(new Wall(mJetBoyX + 7 * getBoxSize(), mJetBoyY, board, 5, context));
+                level.add(new Wall(mJetBoyX + 8 * getBoxSize(), mJetBoyY, board, 5, context));
+                level.add(new Wall(mJetBoyX + 14 * getBoxSize(), mJetBoyY, board, 4, context));
+                level.add(new Wall(mJetBoyX + 15 * getBoxSize(), mJetBoyY, board, 6, context));
+                break;
+            default:
+                level.add(new Wall(mJetBoyX - 1 * getBoxSize(), mJetBoyY, board, 4, context));
+                level.add(new Wall(mJetBoyX + 5 * getBoxSize(), mJetBoyY, board, 6, context));
+                level.add(new Wall(mJetBoyX + 6 * getBoxSize(), mJetBoyY, board, 2, context));
+                level.add(new Wall(mJetBoyX + 12 * getBoxSize(), mJetBoyY, board, 8, context));
+                level.add(new Wall(mJetBoyX + 17 * getBoxSize(), mJetBoyY, board, 5, context));
+                break;
+        }
 
-        return level1;
+        return level;
     }
 
     public void collision(ArrayList<Wall> greateWall, Box myBox) {
@@ -407,7 +476,7 @@ public class BoxJumpGame {
             Point range = new Point(temp.getWidth(), 0);
             if(rectangleColidate(myBox, wall_top_left, range)) {
                 myBox.setPosition(new Point(getStartLeft(), mJetBoyY));  // reset box to begining
-                myBox.setExplode();
+                myBox.setExplode();        // Box explode
                 // dead ++
             }
         }
@@ -439,14 +508,17 @@ public class BoxJumpGame {
     }
 
     // Drop box a bit of time when start run.
-    public void dropBox(Canvas canvas, Box box) {
+    public void dropBox(Canvas canvas, Box box) { // TODO use other way
+        Log.e(TAG, "dropbox");
         int drop_height = box.getHeight()*3;
         // drop height
         // drop time (may be hard to install)
+        // set velocity
         box.setPosition(new Point(getStartLeft(), box.getPosisiton().y-drop_height));
         for(int h = 0; h < drop_height; h+=6) {
             canvas.drawBitmap(box.getCurrentSprite(), box.getPosisiton().x, box.getPosisiton().y - box.getHeight(), null);
             box.setPosition(new Point(getStartLeft(), box.getPosisiton().y-h));
         }
+        box.setPosition(new Point(getStartLeft()+6, box.getPosisiton().y)); // fix me
     }
 }

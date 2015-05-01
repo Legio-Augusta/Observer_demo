@@ -22,6 +22,7 @@ package littlewing.flyone;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Message;
@@ -92,27 +93,29 @@ public class JetBoyView extends SurfaceView implements SurfaceHolder.Callback {
     
                 public void handleMessage(Message m) {
     
-                    mTimerView.setText(m.getData().getString("text"));
-    
-                    if (m.getData().getString("STATE_LOSE") != null) {
+//                    mTimerView.setText(m.getData().getString("text"));
+
+//                    if (m.getData().getString("STATE_LOSE") != null) {
+                    if (m.getData().getString("STATE_WIN") != null) {
                         //mButtonRestart.setVisibility(View.VISIBLE);
                         mButtonRetry.setVisibility(View.VISIBLE);
     
-                        mTimerView.setVisibility(View.INVISIBLE);
+//                        mTimerView.setVisibility(View.INVISIBLE);
     
                         mTextView.setVisibility(View.VISIBLE);
     
-                        Log.d(TAG, "the total was " + mHitTotal);
+//                        Log.d(TAG, "the total was " + mHitTotal);
     
-                        if (mHitTotal >= mSuccessThreshold) {
+                        if(true) { //(mHitTotal >= mSuccessThreshold) {  //fix me
+                            mTextView.setTextColor(Color.parseColor("#FF9900"));
                             mTextView.setText(R.string.winText);
                         } else {
                             mTextView.setText("You Lose! " + mHitTotal
                                     + "kkk");
                         }
     
-                        mTimerView.setText("1:12");
-                        mTextView.setHeight(20);
+//                        mTimerView.setText("1:12"); // TODO set timer
+//                        mTextView.setHeight(20);
     
                     }
                 }//end handle msg

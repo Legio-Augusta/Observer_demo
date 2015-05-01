@@ -92,6 +92,8 @@ public class JetBoy extends Activity implements View.OnClickListener {
         if (mJetBoyThread.getGameState() == JetBoyThread.getBoxjump().STATE_START) {
             mButton.setText("PLAY!");
             mTextView.setVisibility(View.VISIBLE);
+            mJetBoyThread.boxjump.mHitTotal = 0; // set hitTotal to 0
+            mJetBoyThread.boxjump.setLevel(1);  // reset level
 
             mTextView.setText(R.string.helpText);
             mJetBoyThread.setGameState(JetBoyThread.getBoxjump().STATE_PLAY);
@@ -101,7 +103,7 @@ public class JetBoy extends Activity implements View.OnClickListener {
         else if (mJetBoyThread.getGameState() == JetBoyThread.getBoxjump().STATE_PLAY) {
             mButton.setVisibility(View.INVISIBLE);
             mTextView.setVisibility(View.INVISIBLE);
-            mTimerView.setVisibility(View.VISIBLE);
+//            mTimerView.setVisibility(View.VISIBLE);
             mJetBoyThread.setGameState(JetBoyThread.getBoxjump().STATE_RUNNING);
 
         }
@@ -117,6 +119,9 @@ public class JetBoy extends Activity implements View.OnClickListener {
             mTextView.setVisibility(View.VISIBLE);
             mButton.setText("PLAY!");
             mButton.setVisibility(View.VISIBLE);
+
+            mJetBoyThread.boxjump.mHitTotal = 0; // set hitTotal to 0
+            mJetBoyThread.boxjump.setLevel(1);  // reset level
 
             mJetBoyThread.setGameState(JetBoyThread.getBoxjump().STATE_PLAY);
 

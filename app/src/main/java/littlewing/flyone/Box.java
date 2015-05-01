@@ -44,9 +44,9 @@ public class Box extends Observable {
         box_img[1] = BitmapFactory.decodeResource(mRes, R.drawable.box_blue_90); // box rotated 90 degrees
         box_img[2] = BitmapFactory.decodeResource(mRes, R.drawable.box_blue_180);
         box_img[3] = BitmapFactory.decodeResource(mRes, R.drawable.box_blue_270);
-        box_img[4] = BitmapFactory.decodeResource(mRes, R.drawable.effect_09);
+        box_img[4] = BitmapFactory.decodeResource(mRes, R.drawable.effect_07);
 
-        for(int i=0; i <= 3; i++) {
+        for(int i=0; i < 3; i++) { // 4th is explode
             box_img[i] = Bitmap.createScaledBitmap(box_img[i], getBoxSize(board.y), getBoxSize(board.y), true);       // scale box image size
         }
 

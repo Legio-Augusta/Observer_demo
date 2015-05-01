@@ -10,7 +10,7 @@
 
 	<TextView android:id="@+id/text" android:text="@string/helpText"
 		style="@style/helpText" android:visibility="invisible" 
-		android:layout_width="300px" android:layout_height="300px"
+		android:layout_width="287dp" android:layout_height="266dp"
 		android:background="#7Fffffff" android:layout_gravity="center" />
 
 	<Button android:id="@+id/Button01" android:text="@string/start"

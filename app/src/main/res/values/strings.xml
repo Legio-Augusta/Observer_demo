@@ -5,7 +5,7 @@
 	<string name="retry">RETRY</string>
 	<string name="restart">RETURN</string>
 	<string name="helpText">Touch to jump !\n\n</string>
-	<string name="winText">You win, You are the master of the Universe!\n\nBOXJUMP by Rambo®\n\nProduced by LittleWing Studio\nMusic by Electronic House\nGraphics by Randy O’Connor\nProgramming by Rocky</string>
+	<string name="winText">You win, You are out of the box huh?!\n\nBOXJUMP by LittleWing Studio®\nMusic by Electronic House</string>
 	<string name="loseText">Sorry, you lose.</string>
 	<string name="timer">1:12</string>
 </resources>
